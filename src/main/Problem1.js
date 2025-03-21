@@ -1,53 +1,45 @@
-// Load the fs module for file system operations
 var fs = require('fs');
 var path = require('path');
 
-// Define the output directory
 var outputDir = "C:\\Users\\saray\\OneDrive - Worcester Polytechnic Institute (wpi.edu)\\Year 3\\C Term\\CS 4433 - Big Data Management and Analytics\\Projects\\Project_4\\output\\problem1";
-
-// Function to ensure the output directory exists and is empty
 function prepareOutputDirectory(dir) {
     if (fs.existsSync(dir)) {
-        // Delete all files in the directory
+        // delete all files in output directory
         fs.readdirSync(dir).forEach(function(file) {
             var filePath = path.join(dir, file);
-            fs.unlinkSync(filePath); // Delete the file
+            fs.unlinkSync(filePath);
         });
     } else {
-        // Create the directory if it doesn't exist
+        // create output directory if it doesn't exist
         fs.mkdirSync(dir, { recursive: true });
     }
 }
 
-// Prepare the output directory
 prepareOutputDirectory(outputDir);
 
-// Function to write output to a file
+// write output to a file
 function writeToFile(filename, data) {
     var outputPath = path.join(outputDir, filename);
     fs.writeFileSync(outputPath, JSON.stringify(data, null, 2) + '\n');
 }
 
+
 // Query 1: Change the _id of "Grace Hopper" to 333
 var graceHopperDoc = db['famous-people'].findOne({ "name.first": "Grace", "name.last": "Hopper" });
 
 if (graceHopperDoc) {
-    // Create a new document with _id: 333 and copy all fields
-    graceHopperDoc._id = 333; // Set the new _id
-    db['famous-people'].insertOne(graceHopperDoc); // Insert the new document
-
-    // Delete the old document
+    graceHopperDoc._id = 333;
+    db['famous-people'].insertOne(graceHopperDoc);
     db['famous-people'].deleteOne({ "_id": graceHopperDoc._id });
 
     writeToFile('query1.txt', { success: true, message: "Updated _id of Grace Hopper to 333." });
 } else {
-    writeToFile('query1.txt', { success: false, message: "Grace Hopper not found." });
+    writeToFile('query1.txt', { success: false, message: "Grace Hopper Doc not found." });
 }
 
-// Query 2: Update or insert new records into the collection
-var query2Result = [];
 
-// Update or insert document with _id: 222
+// Query 2: Update/insert new records into the collection
+var query2Result = [];
 var updateResult1 = db['famous-people'].updateOne(
     { "_id": 222 },
     {
@@ -71,11 +63,10 @@ var updateResult1 = db['famous-people'].updateOne(
             ]
         }
     },
-    { upsert: true } // Insert the document if it doesn't exist
+    { upsert: true } // insert document if it doesn't exist
 );
 query2Result.push(updateResult1);
 
-// Update or insert document with _id: 333
 var updateResult2 = db['famous-people'].updateOne(
     { "_id": 333 },
     {
@@ -106,13 +97,15 @@ var updateResult2 = db['famous-people'].updateOne(
             ]
         }
     },
-    { upsert: true } // Insert the document if it doesn't exist
+    // insert document if it doesn't exist
+    { upsert: true }
 );
 query2Result.push(updateResult2);
 
-writeToFile('query2.txt', { success: true, message: "Updated or inserted documents with _id: 222 and _id: 333.", result: query2Result });
+writeToFile('query2.txt', { success: true, message: "Updated/inserted documents with _id: 222 and _id: 333.", result: query2Result });
 
-// Query 3: Report all documents of people who got at least one "Turing Award" after 1940
+
+// Query 3: Report all documents of people who got at least one Turing Award after 1940
 var query3Result = db['famous-people'].find({
     "awards": {
         $elemMatch: {
@@ -128,7 +121,8 @@ if (query3Result.length > 0) {
     writeToFile('query3.txt', { success: false, message: "No documents found with at least one Turing Award after 1940." });
 }
 
-// Query 4: Report all people who got more than one "Turing Award"
+
+// Query 4: Report all people who got more than one Turing Award
 var query4Result = db['famous-people'].aggregate([
     {
         $project: {
@@ -144,7 +138,8 @@ var query4Result = db['famous-people'].aggregate([
     },
     {
         $match: {
-            "awards.1": { $exists: true } // Check if there are at least 2 Turing Awards
+            // check if there are at least 2 Turing Awards
+            "awards.1": { $exists: true }
         }
     }
 ]).toArray();
@@ -154,6 +149,7 @@ if (query4Result.length > 0) {
 } else {
     writeToFile('query4.txt', { success: false, message: "No people found with more than one Turing Award." });
 }
+
 
 // Query 5: Update the document of “Grace Hopper” to add a new contribution
 var query5Result = db['famous-people'].updateOne(
@@ -166,6 +162,7 @@ if (query5Result.modifiedCount > 0) {
 } else {
     writeToFile('query5.txt', { success: false, message: "Grace Hopper's document not found or no changes made." });
 }
+
 
 // Query 6: Insert a new field called “comments” into the document of “Mary Sally”
 var query6Result = db['famous-people'].updateOne(
@@ -182,6 +179,7 @@ if (query6Result.modifiedCount > 0) {
 } else {
     writeToFile('query6.txt', { success: false, message: "Mary Sally's document not found or no changes made." });
 }
+
 
 // Query 7: For each contribution by “Mary Sally”, list the people’s first and last names who have the same contribution (excluding Mary Sally)
 var marySallyDoc = db['famous-people'].findOne({ "_id": 222 });
@@ -201,10 +199,11 @@ if (marySallyDoc && marySallyDoc.contribs) {
         ).toArray();
         query7Result.push({ Contribution: contribution, People: people });
     });
-    writeToFile('query7.txt', { success: true, message: "Found people with the same contributions as Mary Sally (excluding Mary Sally).", result: query7Result });
+    writeToFile('query7.txt', { success: true, message: "Found people with the same contributions as Mary Sally.", result: query7Result });
 } else {
     writeToFile('query7.txt', { success: false, message: "Mary Sally's document not found or no contributions listed." });
 }
+
 
 // Query 8: Add (copy) all the contributions of document _id = 3 to that of document _id = 6
 var doc3 = db['famous-people'].findOne({ "_id": 3 });
@@ -223,6 +222,7 @@ if (doc3 && doc3.contribs) {
     writeToFile('query8.txt', query8Result);
 }
 
+
 // Query 9: Report all documents where the first name matches the regular expression “Jo*”, sorted by the last name
 var query9Result = db['famous-people'].find({
     "name.first": { $regex: /^Jo/ }
@@ -239,11 +239,11 @@ if (query9Result.length > 0) {
 var doc30 = db['famous-people'].findOne({ "_id": 30 });
 
 if (doc30) {
-    // Check if the document has an award given by WPI
+    // check if document has an award given by WPI
     var wpiAwardIndex = doc30.awards.findIndex(award => award.by === "WPI");
 
     if (wpiAwardIndex !== -1) {
-        // Update the award year
+        // update award year
         var query10Result = db['famous-people'].updateOne(
             { "_id": 30, "awards.by": "WPI" },
             { $set: { "awards.$.year": 1999 } }
