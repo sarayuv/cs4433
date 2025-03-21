@@ -9,3 +9,6 @@
     * mongosh
     * use famous-people;
     * load("C:\\Users\\saray\\OneDrive - Worcester Polytechnic Institute (wpi.edu)\\Year 3\\C Term\\CS 4433 - Big Data Management and Analytics\\Projects\\Project_4\\src\\main\\Problem1.js");
+4. Run Problem2.js
+    * make sure to reset the database again
+    * load("C:\\Users\\saray\\OneDrive - Worcester Polytechnic Institute (wpi.edu)\\Year 3\\C Term\\CS 4433 - Big Data Management and Analytics\\Projects\\Project_4\\src\\main\\Problem2.js");
