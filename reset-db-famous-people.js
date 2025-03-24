@@ -1,4 +1,4 @@
-// run script: mongosh reset-db.js
+// run script: mongosh reset-db-famous-people.js
 
 // Step 1: Delete the database
 var db = db.getSiblingDB('famous-people'); // Switch to the 'famous-people' database
