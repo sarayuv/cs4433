@@ -18,37 +18,12 @@ prepareOutputDirectory(outputDir);
 
 function writeToFile(filename, data) {
     var outputPath = path.join(outputDir, filename);
-    let outputString;
-
-    if (filename === 'query1.txt') {
-        outputString = data[0].ancestors.map(a => `Name: ${a.Name}, Level: ${a.Level}`).join('\n');
-    } else if (filename === 'query2.txt') {
-        outputString = `Tree Height: ${data[0].treeHeight}`;
-    } else if (filename === 'query3.txt') {
-        if (data.length > 0) {
-            outputString = `Parent of MongoDB: ${data[0].parent}`;
-        } else {
-            outputString = "No parent found for MongoDB";
-        }
-    } else if (filename === 'query4.txt') {
-        if (data.length > 0 && data[0].descendants) {
-            outputString = `Descendants of Programming:\n${data[0].descendants.join('\n')}`;
-        } else {
-            outputString = "No descendants found for Programming";
-        }
-    } else if (filename === 'query5.txt') {
-        if (data.length > 0 && data[0].siblings) {
-            outputString = `Siblings of Languages:\n${data[0].siblings.join('\n')}`;
-        } else {
-            outputString = "No siblings found for Languages";
-        }
-    }
-    fs.writeFileSync(outputPath, outputString + '\n');
+    fs.writeFileSync(outputPath, JSON.stringify(data, null, 2) + '\n');
 }
 
 
 // Query 1: Report the ancestors of "MongoDB"
-var ancestorsResult = db.categories.aggregate([
+var query1Result = db.categories.aggregate([
     { $match: { _id: "MongoDB" } },
     {
         $graphLookup: {
@@ -83,10 +58,14 @@ var ancestorsResult = db.categories.aggregate([
     }
 ]).toArray();
 
-writeToFile("query1.txt", ancestorsResult);
+writeToFile("query1.txt", {
+    title: "Ancestors of MongoDB",
+    results: query1Result[0]?.ancestors || []
+});
+
 
 // Query 2: Find Tree Height
-var heightResult = db.categories.aggregate([
+var query2Result = db.categories.aggregate([
     { $match: { _id: "Books" } },
     {
         $graphLookup: {
@@ -113,11 +92,14 @@ var heightResult = db.categories.aggregate([
     }
 ]).toArray();
 
-writeToFile("query2.txt", heightResult);
+writeToFile("query2.txt", {
+    title: "Tree Height from Books",
+    height: query2Result[0]?.treeHeight || 0
+});
 
 
 // Query 3: Report the Parent of "MongoDB"
-var parentResult = db.categories.aggregate([
+var query3Result = db.categories.aggregate([
     {
         $match: {
             children: { $in: ["MongoDB"] }
@@ -131,11 +113,14 @@ var parentResult = db.categories.aggregate([
     }
 ]).toArray();
 
-writeToFile("query3.txt", parentResult);
+writeToFile("query3.txt", {
+    title: "Parent of MongoDB",
+    parent: query3Result[0]?.parent || "Not found"
+});
 
 
 // Query 4: Report the Descendants of "Programming"
-var descendantsResult = db.categories.aggregate([
+var query4Result = db.categories.aggregate([
     {
         $match: { _id: "Programming" }
     },
@@ -172,33 +157,35 @@ var descendantsResult = db.categories.aggregate([
     }
 ]).toArray();
 
-writeToFile("query4.txt", descendantsResult);
+writeToFile("query4.txt", {
+    title: "Descendants of Programming",
+    descendants: query4Result[0]?.descendants || []
+});
 
 
 // Query 5: Report the Siblings of "Languages"
-var siblingsResult = db.categories.aggregate([
-    {
-        $match: { _id: "Languages" }
-    },
+var query5Result = db.categories.aggregate([
+    { $match: { _id: "Languages" } },
+
     {
         $lookup: {
             from: "categories",
             localField: "parent",
             foreignField: "_id",
-            as: "parentData"
+            as: "parentDoc"
         }
     },
-    {
-        $unwind: "$parentData"
-    },
+    { $unwind: "$parentDoc" },
+
     {
         $lookup: {
             from: "categories",
-            localField: "parentData.children",
+            localField: "parentDoc.children",
             foreignField: "_id",
             as: "siblings"
         }
     },
+
     {
         $project: {
             _id: 0,
@@ -213,4 +200,7 @@ var siblingsResult = db.categories.aggregate([
     }
 ]).toArray();
 
-writeToFile("query5.txt", siblingsResult);
+writeToFile("query5.txt", {
+    title: "Siblings of Languages",
+    siblings: query5Result[0]?.siblings || []
+});
