@@ -4,20 +4,17 @@ var path = require('path');
 var outputDir = "C:\\Users\\saray\\OneDrive - Worcester Polytechnic Institute (wpi.edu)\\Year 3\\C Term\\CS 4433 - Big Data Management and Analytics\\Projects\\Project_4\\output\\problem1";
 function prepareOutputDirectory(dir) {
     if (fs.existsSync(dir)) {
-        // delete all files in output directory
         fs.readdirSync(dir).forEach(function(file) {
             var filePath = path.join(dir, file);
             fs.unlinkSync(filePath);
         });
     } else {
-        // create output directory if it doesn't exist
         fs.mkdirSync(dir, { recursive: true });
     }
 }
 
 prepareOutputDirectory(outputDir);
 
-// write output to a file
 function writeToFile(filename, data) {
     var outputPath = path.join(outputDir, filename);
     fs.writeFileSync(outputPath, JSON.stringify(data, null, 2) + '\n');
@@ -63,7 +60,7 @@ var updateResult1 = db['famous-people'].updateOne(
             ]
         }
     },
-    { upsert: true } // insert document if it doesn't exist
+    { upsert: true }
 );
 query2Result.push(updateResult1);
 
@@ -97,7 +94,6 @@ var updateResult2 = db['famous-people'].updateOne(
             ]
         }
     },
-    // insert document if it doesn't exist
     { upsert: true }
 );
 query2Result.push(updateResult2);
@@ -138,7 +134,6 @@ var query4Result = db['famous-people'].aggregate([
     },
     {
         $match: {
-            // check if there are at least 2 Turing Awards
             "awards.1": { $exists: true }
         }
     }
@@ -239,11 +234,9 @@ if (query9Result.length > 0) {
 var doc30 = db['famous-people'].findOne({ "_id": 30 });
 
 if (doc30) {
-    // check if document has an award given by WPI
     var wpiAwardIndex = doc30.awards.findIndex(award => award.by === "WPI");
 
     if (wpiAwardIndex !== -1) {
-        // update award year
         var query10Result = db['famous-people'].updateOne(
             { "_id": 30, "awards.by": "WPI" },
             { $set: { "awards.$.year": 1999 } }
